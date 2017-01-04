@@ -1,0 +1,12 @@
+KerasBaseline.py
+MatthewVersion.py
+mnist*
+Mnist*
+Operators
+TestPhotos
+*.hdf5
+*.jpg
+.DS_Store
+*.xml
+*.iml
+*.h5

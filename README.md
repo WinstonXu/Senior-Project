@@ -1,0 +1,1 @@
+If you're trying to run code don't forget to change the directory to the appropriate place
