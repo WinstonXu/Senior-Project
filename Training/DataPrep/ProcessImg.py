@@ -154,7 +154,7 @@ def makeTestData(samplesize, picarr, labelarr, numlist, oplist):
         labelarr.append(label)
         if i%1000 == 0:
           print label
-          finalIm.show()
+          # finalIm.show()
 
 #Rotates pictures somewhere between 10 degrees clock and counterclockwise
 def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
@@ -179,7 +179,7 @@ def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
         labelarr.append(label)
         if i%10000 == 0:
           print label
-          finalIm.show()
+          # finalIm.show()
 
 
 #Enlarges picture and then crops out middle 28x28
@@ -204,7 +204,7 @@ def makeZoomData(samplesize, picarr, labelarr, numlist, oplist):
         labelarr.append(label)
         if i % 10000 == 0:
             print label
-            finalIm.show()
+            # finalIm.show()
 
 #Shifts Picture in a direction, resize to 28x28
 def makeTranslateData(samplesize, picarr, labelarr, numlist, oplist):
@@ -228,7 +228,7 @@ def makeTranslateData(samplesize, picarr, labelarr, numlist, oplist):
         labelarr.append(label)
         if i % 10000 == 0:
             print label
-            finalIm.show()
+            # finalIm.show()
 
 
 def translate(image):
