@@ -5,7 +5,8 @@ import numpy as np
 import sys
 
 def testmodel(file_name):
-    os.chdir(os.path.dirname(__file__))
+    print os.path.dirname(__file__)
+    os.chdir(os.path.curdir)
     model = load_model('pic_model.h5')
     if not os.path.exists(os.path.join(os.path.dirname(__file__), "Uploads", file_name)):
         print "Image does not exist"
