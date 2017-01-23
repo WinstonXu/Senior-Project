@@ -1,7 +1,5 @@
 KerasBaseline.py
 MatthewVersion.py
-mnist*
-Mnist*
 Operators
 TestPhotos
 *.hdf5
@@ -9,4 +7,6 @@ TestPhotos
 .DS_Store
 *.xml
 *.iml
+MnistPics
+Operators
 *.h5
