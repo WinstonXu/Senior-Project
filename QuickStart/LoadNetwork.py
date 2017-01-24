@@ -21,9 +21,19 @@ def testmodel(file_name):
         pixelData *= 1 / 255.
         res = model.predict(pixelData)
         # print res.shape
-        print np.argmax(res[0][:10])
-        print np.argmax(res[0][10:14])
-        print np.argmax(res[0][14:])
+        equation = ""
+        equation += "%d" %(np.argmax(res[0][:10]))
+        operator = np.argmax(res[0][10:14])
+        if operator == 0:
+            equation += "+"
+        if operator == 1:
+            equation += "-"
+        if operator == 2:
+            equation += "x"
+        if operator == 3:
+            equation += "/"
+        equation += "%d" %(np.argmax(res[0][14:]))
+        return equation
 
 if __name__ == "__main__":
     testmodel(sys.argv[1])
