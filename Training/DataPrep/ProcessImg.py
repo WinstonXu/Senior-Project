@@ -6,7 +6,7 @@ import h5py
 import sys
 import numpy as np
 import h5py
-import cPickle
+import _pickle as cPickle
 import gzip
 from os.path import dirname, join
 import random
@@ -81,7 +81,7 @@ def loadData(filename):
     f = h5py.File(filename, 'r')
     x = f['img']
     y = f['label']
-    print x.shape, y.shape
+    print (x.shape, y.shape)
     return x, y
 
 #Create jpg files from hdf5 file
@@ -94,7 +94,7 @@ def getMNIST():
         imgs = np.reshape(f[key]['inputs'], (f[key]['inputs'].shape[0], 28, 28))
         imgs = imgs*255
         imgs = imgs.astype('uint8')
-        print len(imgs)
+        print (len(imgs))
         # print imgs[0]
         # pic = Image.fromarray(imgs[1], 'L')
         # pic.show()
@@ -112,7 +112,7 @@ def getMNIST():
                 pic.save(name+".jpg")
 
 def makeDataset(samplesize):
-    print os.getcwd()
+    print (os.getcwd())
     pic = []
     lab = []
     numpicsdir = os.path.join(_picbasedir, 'MnistPics')
@@ -126,7 +126,7 @@ def makeDataset(samplesize):
     pictures = np.asarray(pic)
     labels = np.asarray(lab)
     labels = np.reshape(labels, (len(labels),24))
-    print pictures.shape, labels.shape
+    print (pictures.shape, labels.shape)
     os.chdir(os.path.join(os.path.dirname(__file__), os.pardir))
     f = h5py.File("Dataset.hdf5", "w")
     f.create_dataset('img', data=pictures)
@@ -153,7 +153,7 @@ def makeTestData(samplesize, picarr, labelarr, numlist, oplist):
         picarr.append(pic)
         labelarr.append(label)
         if i%1000 == 0:
-          print label
+          print (label)
           # finalIm.show()
 
 #Rotates pictures somewhere between 10 degrees clock and counterclockwise
@@ -178,7 +178,7 @@ def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
         picarr.append(pic)
         labelarr.append(label)
         if i%10000 == 0:
-          print label
+          print (label)
           # finalIm.show()
 
 
@@ -203,7 +203,7 @@ def makeZoomData(samplesize, picarr, labelarr, numlist, oplist):
         picarr.append(pic)
         labelarr.append(label)
         if i % 10000 == 0:
-            print label
+            print (label)
             # finalIm.show()
 
 #Shifts Picture in a direction, resize to 28x28
@@ -227,7 +227,7 @@ def makeTranslateData(samplesize, picarr, labelarr, numlist, oplist):
         picarr.append(pic)
         labelarr.append(label)
         if i % 10000 == 0:
-            print label
+            print (label)
             # finalIm.show()
 
 
@@ -290,8 +290,8 @@ def realLifeTest():
         pictures[i] =pixelData
         title = allpics[i].split("_")
         res = resultVector(int(title[0][0]), int(title[0][2]), title[0][1])
-        print title[0]
-        print res
+        print (title[0])
+        print (res)
         labels[i] =res
     os.chdir("Senior-Project")
     f = h5py.File("Dataset.hdf5", "a")

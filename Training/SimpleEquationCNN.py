@@ -11,7 +11,7 @@ def loadCompositePics():
     x = f['img'][:size]
     y = f['label'][:size]
 
-    print x.shape, y.shape
+    print (x.shape, y.shape)
     # x = f['x_train'][:size]
 
     x *= 1 / 255.
@@ -22,8 +22,9 @@ def loadCompositePics():
     perm = np.random.permutation(range(len(x)))
     X = X2d[perm]
     Y = y[perm]
-    X_train, X_test = X[:len(X) / 2], X[len(X) / 2:]
-    y_train, y_test = Y[:len(y) / 2], Y[len(y) / 2:]
+    print('type: ' + str(type(len(X) / 2)))
+    X_train, X_test = X[:int((len(X) / 2))], X[int((len(X) / 2)):]
+    y_train, y_test = Y[:int((len(y) / 2))], Y[int((len(y) / 2)):]
 
     # rtest = f['real-img'][:30]
     # rlabel = f['real-label'][:30]
@@ -81,7 +82,7 @@ def test(model, X_train, X_test, y_train, y_test):
             count +=1
         # print predicted[i][:10], y_test[i][:10]
         # print predicted[i][13:],y_test[i][13:]
-    print "Training Set: ", count/total
+    print ("Training Set: ", count/total)
 
     predicted = model.predict(X_test)
     total = len(predicted)*3.0
@@ -96,7 +97,7 @@ def test(model, X_train, X_test, y_train, y_test):
             count += 1
         # print predicted[i][:10], y_test[i][:10]
         # print predicted[i][13:],y_test[i][13:]
-    print "Test Set: ", count/total
+    print ("Test Set: ", count/total)
 
 def save_model(model):
     os.chdir(os.path.join(os.path.dirname(__file__), os.pardir, "QuickStart"))
@@ -113,7 +114,7 @@ if __name__ == "__main__":
 
     # X_train, X_test, y_train, y_test, r_test, r_label = loadCompositePics()
     X_train, X_test, y_train, y_test = loadCompositePics()
-    print X_train.shape
+    print (X_train.shape)
     model = createConv()
 
     minibatch_size = 32
