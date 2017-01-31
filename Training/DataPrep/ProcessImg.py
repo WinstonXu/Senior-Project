@@ -13,7 +13,8 @@ import random
 
 
 _default_name = join(dirname(__file__), "mnist.h5")
-_picbasedir = os.path.join(os.path.dirname(__file__), 'DatasetPictures')
+parent_dir = os.path.join(os.path.dirname(__file__), 'DatasetPictures')
+
 
 def get_store(fname=_default_name):
     print("Loading from store {}".format(fname))
@@ -70,12 +71,15 @@ def build_store(store=_default_name, mnist="mnist.pkl.gz"):
 #     pic = f.create_dataset('img', data=pixels)
 #     pic.attrs["LABEL"] = label
 #
+
+
 def makeHDF5(image, label):
     pixelData = image.getdata()
     pixelData = np.asarray(pixelData, dtype=np.float64).reshape((image.size[1], image.size[0]))
     return pixelData, label
 
-#Needs to be changed
+
+# Needs to be changed
 def loadData(filename):
     # os.chdir("/Users/Winston/PycharmProjects/ImgProcessing")
     f = h5py.File(filename, 'r')
@@ -84,7 +88,8 @@ def loadData(filename):
     print (x.shape, y.shape)
     return x, y
 
-#Create jpg files from hdf5 file
+
+# Create jpg files from hdf5 file
 def getMNIST():
     f = h5py.File("mnist.h5", 'r')
     if not os.path.exists("MnistPics"):
@@ -111,52 +116,72 @@ def getMNIST():
             else:
                 pic.save(name+".jpg")
 
+'''
+no repeats && every combo && every image
+'''
+
+
 def makeDataset(samplesize):
-    print (os.getcwd())
-    pic = []
-    lab = []
-    numpicsdir = os.path.join(_picbasedir, 'MnistPics')
-    allpics = [j for j in os.listdir(numpicsdir) if ".jpg" in j]
-    oppicsdir = os.path.join(_picbasedir, 'Operators')
-    oppics = [j for j in os.listdir(oppicsdir) if ".jpg" in j]
-    makeTestData(samplesize, pic, lab, allpics, oppics)
-    makeSlantData(samplesize, pic, lab, allpics, oppics)
-    makeZoomData(samplesize, pic, lab, allpics, oppics)
-    makeTranslateData(samplesize, pic, lab, allpics, oppics)
-    pictures = np.asarray(pic)
-    labels = np.asarray(lab)
-    labels = np.reshape(labels, (len(labels),24))
-    print (pictures.shape, labels.shape)
+    print(os.getcwd())
+
+    equation_images = []
+    equation_labels = []
+
+    mnist_dir = os.path.join(parent_dir, 'MnistPics')
+    mnist_pics = [j for j in os.listdir(mnist_dir) if ".jpg" in j]
+    operators_dir = os.path.join(parent_dir, 'Operators')
+    operator_pics = [j for j in os.listdir(operators_dir) if ".jpg" in j]
+
+    makeTestData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics)
+    makeSlantData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics)
+    makeZoomData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics)
+    makeTranslateData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics)
+
+    equation_images = np.asarray(equation_images)
+    equation_labels = np.asarray(equation_labels)
+    equation_labels = np.reshape(equation_labels, (len(equation_labels), 24))
+    print(equation_images.shape, equation_labels.shape)
+
     os.chdir(os.path.join(os.path.dirname(__file__), os.pardir))
     f = h5py.File("Dataset.hdf5", "w")
-    f.create_dataset('img', data=pictures)
-    f.create_dataset('label', data=labels)
+    f.create_dataset('img', data=equation_images)
+    f.create_dataset('label', data=equation_labels)
 
-#Stitches two digit and one operand picture together, creates dataset and labels for those images
-def makeTestData(samplesize, picarr, labelarr, numlist, oplist):
-    picsize = 28
-    for i in range(samplesize):
-        num1file = random.choice(numlist)
-        num2file = random.choice(numlist)
-        opfile = random.choice(oplist)
-        target1 = int(num1file.split("-")[1][0])
-        target2 = int(num2file.split("-")[1][0])
-        target3 = opfile.split(" ")[0]
-        part1 = Image.open(os.path.join(_picbasedir, 'MnistPics', num1file))
-        part2 = Image.open(os.path.join(_picbasedir, 'MnistPics', num2file))
-        part3 = Image.open(os.path.join(_picbasedir, 'Operators', opfile))
-        finalIm = Image.new('L', (3*picsize, picsize))
-        finalIm.paste(part1, box=(0,0))
-        finalIm.paste(part3,box=(picsize,0))
-        finalIm.paste(part2, box=(2*picsize,0))
-        pic,label = makeHDF5(finalIm, resultVector(target1,target2,target3))
-        picarr.append(pic)
-        labelarr.append(label)
-        if i%1000 == 0:
-          print (label)
-          # finalIm.show()
 
-#Rotates pictures somewhere between 10 degrees clock and counterclockwise
+# def getMnistImg(pic_size, )
+
+# Stitches two digit and one operand picture together, creates dataset and labels for those images
+def makeTestData(sample_size, equation_images, equation_labels, mnist_pics, operator_pics):
+    pic_size = 28
+
+    for i in range(sample_size):
+        num1_file = random.choice(mnist_pics)
+        num2_file = random.choice(mnist_pics)
+        operator_file = random.choice(operator_pics)
+
+        num1_target = int(num1_file.split("-")[1][0])
+        num2_target = int(num2_file.split("-")[1][0])
+        operator_target = operator_file.split(" ")[0]
+
+        num1_image = Image.open(os.path.join(parent_dir, 'MnistPics', num1_file))
+        num2_image = Image.open(os.path.join(parent_dir, 'MnistPics', num2_file))
+        operator_image = Image.open(os.path.join(parent_dir, 'Operators', operator_file))
+
+        # L --> (8-bit pixels, black and white)
+        final_image = Image.new('L', (3*pic_size, pic_size))
+        final_image.paste(num1_image, box=(0,0))
+        final_image.paste(operator_image,box=(pic_size,0))
+        final_image.paste(num2_image, box=(2*pic_size,0))
+
+        pic, label = makeHDF5(final_image, resultVector(num1_target, num2_target, operator_target))
+        equation_images.append(pic)
+        equation_labels.append(label)
+        if i % 1000 == 0:
+            print (label)
+            # final_image.show()
+
+
+# Rotates pictures somewhere between 10 degrees clock and counterclockwise
 def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
     picsize = 28
     for i in range(samplesize):
@@ -167,9 +192,9 @@ def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
         target1 = int(num1file.split("-")[1][0])
         target2 = int(num2file.split("-")[1][0])
         target3 = opfile.split(" ")[0]
-        part1 = Image.open(os.path.join(_picbasedir, 'MnistPics', num1file)).rotate(random.choice(rotations))
-        part2 = Image.open(os.path.join(_picbasedir, 'MnistPics', num2file)).rotate(random.choice(rotations))
-        part3 = Image.open(os.path.join(_picbasedir, 'Operators', opfile)).rotate(random.choice(rotations))
+        part1 = Image.open(os.path.join(parent_dir, 'MnistPics', num1file)).rotate(random.choice(rotations))
+        part2 = Image.open(os.path.join(parent_dir, 'MnistPics', num2file)).rotate(random.choice(rotations))
+        part3 = Image.open(os.path.join(parent_dir, 'Operators', opfile)).rotate(random.choice(rotations))
         finalIm = Image.new('L', (3*picsize, picsize))
         finalIm.paste(part1, box=(0,0))
         finalIm.paste(part3,box=(picsize,0))
@@ -182,7 +207,7 @@ def makeSlantData(samplesize, picarr, labelarr, numlist, oplist):
           # finalIm.show()
 
 
-#Enlarges picture and then crops out middle 28x28
+# Enlarges picture and then crops out middle 28x28
 def makeZoomData(samplesize, picarr, labelarr, numlist, oplist):
     picsize = 28
     for i in range(samplesize):
@@ -192,9 +217,9 @@ def makeZoomData(samplesize, picarr, labelarr, numlist, oplist):
         target1 = int(num1file.split("-")[1][0])
         target2 = int(num2file.split("-")[1][0])
         target3 = opfile.split(" ")[0]
-        part1 = Image.open(os.path.join(_picbasedir, 'MnistPics', num1file)).resize((35,35)).crop((1,1,29,29))
-        part2 = Image.open(os.path.join(_picbasedir, 'MnistPics', num2file)).resize((35,35)).crop((1,1,29,29))
-        part3 = Image.open(os.path.join(_picbasedir, 'Operators', opfile)).resize((35,35)).crop((1,1,29,29))
+        part1 = Image.open(os.path.join(parent_dir, 'MnistPics', num1file)).resize((35, 35)).crop((1, 1, 29, 29))
+        part2 = Image.open(os.path.join(parent_dir, 'MnistPics', num2file)).resize((35, 35)).crop((1, 1, 29, 29))
+        part3 = Image.open(os.path.join(parent_dir, 'Operators', opfile)).resize((35, 35)).crop((1, 1, 29, 29))
         finalIm = Image.new('L', (3 * picsize, picsize))
         finalIm.paste(part1, box=(0, 0))
         finalIm.paste(part3, box=(picsize, 0))
@@ -206,6 +231,7 @@ def makeZoomData(samplesize, picarr, labelarr, numlist, oplist):
             print (label)
             # finalIm.show()
 
+
 #Shifts Picture in a direction, resize to 28x28
 def makeTranslateData(samplesize, picarr, labelarr, numlist, oplist):
     picsize = 28
@@ -216,9 +242,9 @@ def makeTranslateData(samplesize, picarr, labelarr, numlist, oplist):
         target1 = int(num1file.split("-")[1][0])
         target2 = int(num2file.split("-")[1][0])
         target3 = opfile.split(" ")[0]
-        part1 = translate(Image.open(os.path.join(_picbasedir, 'MnistPics', num1file))).resize((28,28))
-        part2 = translate(Image.open(os.path.join(_picbasedir, 'MnistPics', num2file))).resize((28,28))
-        part3 = translate(Image.open(os.path.join(_picbasedir, 'Operators', opfile))).resize((28,28))
+        part1 = translate(Image.open(os.path.join(parent_dir, 'MnistPics', num1file))).resize((28, 28))
+        part2 = translate(Image.open(os.path.join(parent_dir, 'MnistPics', num2file))).resize((28, 28))
+        part3 = translate(Image.open(os.path.join(parent_dir, 'Operators', opfile))).resize((28, 28))
         finalIm = Image.new('L', (3 * picsize, picsize))
         finalIm.paste(part1, box=(0, 0))
         finalIm.paste(part3, box=(picsize, 0))
@@ -264,7 +290,7 @@ def resultVector(num1, num2,operator):
 
 
 def InvertOps():
-    allpics = [j for j in os.listdir(os.path.join(_picbasedir, 'Operators')) if ".jpg" in j]
+    allpics = [j for j in os.listdir(os.path.join(parent_dir, 'Operators')) if ".jpg" in j]
     for pic in allpics:
         image = Image.open(pic)
         inverted_image = PIL.ImageOps.invert(image)
