@@ -1,5 +1,6 @@
 import os
 from PIL import Image
+from PIL import ImageOps
 from PIL import ImageEnhance
 import PIL.ImageOps
 import h5py
@@ -11,11 +12,17 @@ import gzip
 from os.path import dirname, join
 import random
 import csv
+import json
+from random import randint
 
 
 _default_name = join(dirname(__file__), "mnist.h5")
 parent_dir = os.path.join(os.path.dirname(__file__), 'DatasetPictures')
+mnist_dir = os.path.join(parent_dir, 'mnist_imgs/alpha')
+op_dir = os.path.join(parent_dir, 'operator_imgs/alpha')
 
+# mnist_dir = os.path.join(parent_dir, 'mnist_imgs')
+# op_dir = os.path.join(parent_dir, 'operator_imgs')
 
 def get_store(fname=_default_name):
     print("Loading from store {}".format(fname))
@@ -122,25 +129,13 @@ no repeats && every combo && every image
 '''
 
 
-def makeDataset(samplesize):
+def makeDataset():
     print(os.getcwd())
-
-    img_file_count = {}
 
     equation_images = []
     equation_labels = []
 
-    mnist_dir = os.path.join(parent_dir, 'MnistPics')
-    mnist_pics = [j for j in os.listdir(mnist_dir) if ".jpg" in j]
-    operators_dir = os.path.join(parent_dir, 'Operators')
-    operator_pics = [j for j in os.listdir(operators_dir) if ".jpg" in j]
-
-    makeTestData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics, img_file_count)
-    makeSlantData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics, img_file_count)
-    makeZoomData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics, img_file_count)
-    makeTranslateData(samplesize, equation_images, equation_labels, mnist_pics, operator_pics, img_file_count)
-
-    makeAllTestData(28, equation_images, equation_labels, img_file_count)
+    makeTestData(equation_images, equation_labels)
 
     equation_images = np.asarray(equation_images)
     equation_labels = np.asarray(equation_labels)
@@ -153,195 +148,59 @@ def makeDataset(samplesize):
     f.create_dataset('label', data=equation_labels)
 
 
-def makeAllTestData(pic_size, equation_images, equation_labels, img_file_count):
-    count = 0
-    with open('all_equations.csv', newline='') as all_equations:
-        equations_reader = csv.reader(all_equations)
-        for row in equations_reader:
-            count += 1
-            num1, operator, num2 = row[1], row[3], row[5]
-            num1_filename, operator_filename, num2_filename = row[0], row[2], row[4]
-
-            if num1_filename in img_file_count:
-                img_file_count[num1_filename] += 2
-            else:
-                img_file_count[num1_filename] = 2
-
-            if num2_filename in img_file_count:
-                img_file_count[num2_filename] += 2
-            else:
-                img_file_count[num2_filename] = 2
-
-            if operator_filename in img_file_count:
-                img_file_count[operator_filename] += 2
-            else:
-                img_file_count[operator_filename] = 2
-
-            print('num1: ' + num1 + ' operator: ' + operator + ' num2: ' + num2)
-            print('num1_filename: ' + num1_filename + '\noperator_filename: ' + operator_filename
-                  + '\nnum2_filename: ' + num2_filename)
-
-            num1_image = Image.open(os.path.join(parent_dir, 'MnistPics', num1_filename))
-            num2_image = Image.open(os.path.join(parent_dir, 'MnistPics', num2_filename))
-            operator_image = Image.open(os.path.join(parent_dir, 'Operators', operator_filename))
-            makeEquationImage(num1_image, num2_image, operator_image,
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-
-            # if count % 4 == 1:
-            rotations = range(-10, 10)
-            makeEquationImage(num1_image.rotate(random.choice(rotations)),
-                              num2_image.rotate(random.choice(rotations)),
-                              operator_image.rotate(random.choice(rotations)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(num1_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              num2_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              operator_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image.rotate(random.choice(rotations))).resize((28, 28)),
-                              translate(num2_image.rotate(random.choice(rotations))).resize((28, 28)),
-                              translate(operator_image.rotate(random.choice(rotations))).resize((28, 28)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image.rotate(random.choice(rotations)).resize((35, 35))
-                                        .crop((1, 1, 29, 29))).resize((28, 28)),
-                              translate(num2_image.rotate(random.choice(rotations)).resize((35, 35))
-                                        .crop((1, 1, 29, 29))).resize((28, 28)),
-                              translate(operator_image.rotate(random.choice(rotations)).resize((35, 35))
-                                        .crop((1, 1, 29, 29))).resize((28, 28)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(num1_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              num2_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              operator_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(num1_image.resize((35, 35)).crop((1, 1, 29, 29)).rotate(random.choice(rotations)),
-                              num2_image.resize((35, 35)).crop((1, 1, 29, 29)).rotate(random.choice(rotations)),
-                              operator_image.resize((35, 35)).crop((1, 1, 29, 29)).rotate(random.choice(rotations)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28)),
-                              translate(num2_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28)),
-                              translate(operator_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28))
-                              .rotate(random.choice(rotations)),
-                              translate(num2_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28))
-                              .rotate(random.choice(rotations)),
-                              translate(operator_image.resize((35, 35)).crop((1, 1, 29, 29))).resize((28, 28))
-                              .rotate(random.choice(rotations)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              translate(num2_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              translate(operator_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              translate(num2_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              translate(operator_image).resize((28, 28)).rotate(random.choice(rotations)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image).resize((28, 28)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              translate(num2_image).resize((28, 28)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              translate(operator_image).resize((28, 28)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image).resize((28, 28)),
-                              translate(num2_image).resize((28, 28)),
-                              translate(operator_image).resize((28, 28)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(num1_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              num2_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              operator_image.rotate(random.choice(rotations)).resize((35, 35)).crop((1, 1, 29, 29)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(num1_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              num2_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              operator_image.resize((35, 35)).crop((1, 1, 29, 29)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            makeEquationImage(translate(num1_image).resize((28, 28)),
-                              translate(num2_image).resize((28, 28)),
-                              translate(operator_image).resize((28, 28)),
-                              num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            final_image = makeEquationImage(num1_image, num2_image, operator_image,
-                                            num1, num2, operator, equation_images, equation_labels, pic_size)
-
-            if count % 1000 == 0:
-                # print('num1: ' + num1 + ' operator: ' + operator + ' num2: ' + num2)
-                # print('num1_filename: ' + num1_filename + '\noperator_filename: ' + operator_filename
-                #       + '\nnum2_filename: ' + num2_filename)
-                # print(label)
-                final_image.show()
-                print(count)
-                # final_image_2.show()
-
-    all_equations.close()
-
-
-def makeEquationImage(num1_image, num2_image, operator_image, num1, num2, operator,
-                      equation_images, equation_labels,pic_size):
-    final_image = Image.new('L', (3 * pic_size, pic_size))
-    final_image.paste(num1_image, box=(0, 0))
-    final_image.paste(operator_image, box=(pic_size, 0))
-    final_image.paste(num2_image, box=(2 * pic_size, 0))
-    pic, label = makeHDF5(final_image, resultVector(int(num1), int(num2), operator))
-    equation_images.append(pic)
-    equation_labels.append(label)
-    return final_image
-
-
 # Stitches two digit and one operand picture together, creates dataset and labels for those images
-def makeTestData(sample_size, equation_images, equation_labels, mnist_pics, operator_pics, img_file_count):
+def makeTestData(equation_images, equation_labels):
+
+    with open('training_eqs.json') as training_eqs_file:
+        training_eqs = json.load(training_eqs_file)
+        makeTestImages(training_eqs, equation_images, equation_labels)
+
+    with open('test_eqs.json') as test_eqs_file:
+        test_eqs = json.load(test_eqs_file)
+        makeTestImages(test_eqs, equation_images, equation_labels)
+
+    with open('validate_eqs.json') as validate_eqs_file:
+        validate_eqs = json.load(validate_eqs_file)
+        makeTestImages(validate_eqs, equation_images, equation_labels)
+
+
+def makeTestImages(eq_dict, equation_images, equation_labels):
     pic_size = 28
+    count = 0
+    for eq, unq_eqs in eq_dict.items():
+        num1, op, num2 = eq
+        for unq_eq in unq_eqs:
+            num1_file = unq_eq[0]
+            op_file = unq_eq[1]
+            num2_file = unq_eq[2]
 
-    for i in range(sample_size):
-        num1_filename = random.choice(mnist_pics)
-        num2_filename = random.choice(mnist_pics)
-        operator_filename = random.choice(operator_pics)
+            num1_img = Image.open(os.path.join(mnist_dir, num1_file))
+            op_img = Image.open(os.path.join(op_dir, op_file))
+            num2_img = Image.open(os.path.join(mnist_dir, num2_file))
 
-        if num1_filename in img_file_count:
-            img_file_count[num1_filename] += 1
-        else:
-            img_file_count[num1_filename] = 1
-
-        if num2_filename in img_file_count:
-            img_file_count[num2_filename] += 1
-        else:
-            img_file_count[num2_filename] = 1
-
-        if operator_filename in img_file_count:
-            img_file_count[operator_filename] += 1
-        else:
-            img_file_count[operator_filename] = 1
-
-        num1_target = int(num1_filename.split("-")[1][0])
-        num2_target = int(num2_filename.split("-")[1][0])
-        operator_target = operator_filename.split(" ")[0]
-
-        num1_image = Image.open(os.path.join(parent_dir, 'MnistPics', num1_filename))
-        num2_image = Image.open(os.path.join(parent_dir, 'MnistPics', num2_filename))
-        operator_image = Image.open(os.path.join(parent_dir, 'Operators', operator_filename))
-
-        # L --> (8-bit pixels, black and white)
-        final_image = Image.new('L', (3*pic_size, pic_size))
-        final_image.paste(num1_image, box=(0,0))
-        final_image.paste(operator_image,box=(pic_size,0))
-        final_image.paste(num2_image, box=(2*pic_size,0))
-
-        pic, label = makeHDF5(final_image, resultVector(num1_target, num2_target, operator_target))
-        equation_images.append(pic)
-        equation_labels.append(label)
-        # if i % 1000 == 0:
-            # print (label)
+            final_image = ImageOps.invert(Image.new('L', (3 * pic_size, pic_size)))
+            r_flux = randint(0, 10)
+            final_image.paste(num1_img, box=(5, r_flux))
             # final_image.show()
+            if op == 'm':
+                r_flux = randint(-5, 2)
+                final_image.paste(op_img, box=(pic_size, (int(pic_size/2)) + r_flux))
+            else:
+                r_flux = randint(0, 5)
+                final_image.paste(op_img, box=(pic_size, r_flux))
+            # final_image.show()
+            r_flux = randint(0, 10)
+            final_image.paste(num2_img, box=(2 * pic_size, r_flux))
+            # final_image.show()
+
+            pic, label = makeHDF5(final_image, resultVector(int(num1), int(num2), op))
+            equation_images.append(pic)
+            equation_labels.append(label)
+
+            count += 1
+            if count % 5000 == 0:
+                    print(label)
+                    final_image.show()
 
 
 # Rotates pictures somewhere between 10 degrees clock and counterclockwise
@@ -457,7 +316,7 @@ def resultVector(num1, num2, operator):
     result[len(result)-(10-num2)] = 1
     if operator == "+":
         result[10] = 1
-    if operator == "-":
+    if operator == "m":
         result[11] = 1
     if operator == "x":
         result[12] = 1
@@ -510,4 +369,4 @@ if __name__ == "__main__":
     # InvertOps()
     # loadData("Dataset.hdf5")
     #realLifeTest()
-    makeDataset(250000)
+    makeDataset()
