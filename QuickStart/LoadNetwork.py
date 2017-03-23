@@ -6,7 +6,7 @@ import sys
 
 
 def cannedResponse():
-    print('i like booty')
+    return 'i like booty'
 
 def testmodel(file_name):
     print(os.path.dirname(__file__))
