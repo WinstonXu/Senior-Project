@@ -15,12 +15,9 @@ def loadCompositePics():
     test_img = f['test-img'][:]
     test_label = f['test-label'][:]
 
-    # print x.shape, y.shape
-    # x = f['x_train'][:size]
-
     train_img *= 1 / 255.
     test_img *= 1 / 255.
-    # print X.shape
+
     train_2d = np.reshape(train_img, (len(train_img), 84, 28, 1))
     test_2d = np.reshape(test_img, (len(test_img), 84,28,1))
 
