@@ -35,7 +35,7 @@ def loadCompositePics():
     testpic = test_2d[perm2][:test_size]
     testlabels = test_label[perm2][:test_size]
 
-    print trainpics.shape, trainlabels.shape, testpic.shape, testlabels.shape
+    print(trainpics.shape, trainlabels.shape, testpic.shape, testlabels.shape)
     return trainpics,testpic,trainlabels,testlabels
 
 def createConv():
