@@ -59,27 +59,6 @@ def build_store(store=_default_name, mnist="mnist.pkl.gz"):
     print("Closing {}").format(store)
     h5file.close()
 
-# def makeHDF5(folder, filename, label):
-#     # os.chdir("/Users/Winston/PycharmProjects/ImgProcessing")
-#     f = h5py.File(filename, "w")
-#     minsize = 28
-#     os.chdir(folder)
-#     files = os.listdir(os.getcwd())
-#     pixels = np.zeros((len(files), minsize, minsize))
-#     #search only for images
-#     for i in range(len(files)):
-#         if ".jpg" in files[i]:
-#             im = Image.open(files[i], 'r')
-#             im = im.resize((minsize,minsize))
-#             im = im.convert('L')
-#             # im.show()
-#             pixelData = im.getdata()
-#             pixelData = np.asarray(pixelData, dtype=np.float64).reshape((im.size[1], im.size[0]))
-#             pixels[i] = pixelData
-#     pic = f.create_dataset('img', data=pixels)
-#     pic.attrs["LABEL"] = label
-#
-
 
 def makeHDF5(image, label):
     pixelData = image.getdata()
