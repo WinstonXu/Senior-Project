@@ -5,6 +5,9 @@ import numpy as np
 import sys
 
 
+def cannedResponse():
+    return 'i like booty'
+
 def testmodel(file_name):
     print(os.path.dirname(__file__))
     os.chdir(os.path.curdir)
