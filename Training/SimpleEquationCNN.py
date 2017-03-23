@@ -5,6 +5,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D
 import os
 
+
 def loadCompositePics():
     size = 100
     f = h5py.File(os.path.join(os.path.dirname(__file__), "Dataset.hdf5"), 'r')
